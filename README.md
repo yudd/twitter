@@ -25,10 +25,10 @@ users he is following. You can also get a global feed for all the users.
 1. Implement an HTTP based (ReSTful in the loose sense of the term) API that exposes the
 following calls (no need for authentication, choose the format you like):
 
-* CreateUser(UserName)
-* PostMessage(UserId, MessageText)
-* Follow(FollowingUser, FollowedUser)
-* Unfollow(FollwingUser, UnfollowedUser)
-* GetFeed(ForUserId) -- the aggregate feed of the users this user is following!
-* GetGlobalFeed()
+ * CreateUser(UserName)
+ * PostMessage(UserId, MessageText)
+ * Follow(FollowingUser, FollowedUser)
+ * Unfollow(FollwingUser, UnfollowedUser)
+ * GetFeed(ForUserId) -- the aggregate feed of the users this user is following!
+ * GetGlobalFeed()
 
