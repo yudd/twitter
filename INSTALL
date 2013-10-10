@@ -1,0 +1,10 @@
+#!/bin/bash
+set -x
+echo "
+CREATE USER 'twit'@'localhost';
+GRANT USAGE ON *.* TO 'twit'@'localhost' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;
+CREATE DATABASE IF NOT EXISTS twit;
+GRANT ALL PRIVILEGES ON twit.* TO 'twit'@'localhost';
+" | mysql -u root -p
+
+mysql -u twit twit < schema.sql
