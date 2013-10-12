@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block body %}
+  <h3>Global Feed</h3>
+  <ul class="">
+  {% for msg in msgs %}
+    <li class="">{{msg.created}} - {{msg.username}} - 
+      <span>{{msg.text}}</span>
+    </li>
+  {% end %}
+  </ul>
+{% end %}

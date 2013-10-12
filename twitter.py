@@ -82,8 +82,8 @@ class HomeHandler(BaseHandler):
 
 class GetGlobalFeed(BaseHandler):
     def get(self):
-        twits = self.db.query('select * from msgs order by created desc limit 50')
-        self.render('index.html', twits=twits)
+        msgs = self.db.query('select * from msgs order by created desc limit 50')
+        self.render('globalfeed.html', msgs=msgs)
 
 class Follow(BaseHandler):
     def get(self, user):
