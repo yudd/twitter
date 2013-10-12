@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block body %}
+  <h3>Post as user: {{user.username}}</h3>
+  <form action="/post" method="post">
+    <input type="hidden" name="user_id" value="{{user.id}}"/>
+    <div><textarea name="text" rows="3" cols="50"></textarea></div>
+    <div>
+      <input type="submit" value="Submit"/>
+      <a href="/">Cancel</a>
+    </div>
+  </form>
+{% end %}

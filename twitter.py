@@ -18,6 +18,7 @@ class Application(web.Application):
     def __init__(self):
         handlers = [
             (r'/', HomeHandler),
+            (r'/post/(\w+)', PostForm),
             (r'/post', PostMessage),
             (r'/follow', Follow),
             (r'/unfollow', Unfollow),
@@ -45,11 +46,14 @@ class BaseHandler(web.RequestHandler):
     def db(self):
         return self.application.db
 
+    def get_user_by_id(self, user_id):
+        return self.db.get('select * from users where id=%s', int(user_id))
+
     def get_current_user(self):
         user_id = self.get_cookie('user_id')
         if not user_id:
             return None
-        return self.db.get('select * from users where id=%s', int(user_id))
+        return self.get_user_by_id(user_id)
 
 class CreateUser(BaseHandler):
     def get(self):
@@ -59,11 +63,16 @@ class CreateUser(BaseHandler):
         self.set_cookie('username', username)
         self.redirect('/')
 
+class PostForm(BaseHandler):
+    def get(self, user_id):
+        user = self.get_user_by_id(user_id)
+        self.render('post.html', user=user)
+
 class GetFeed(BaseHandler):
     def get(self, user_id):
-        messages = []
-        #self.render('index.html', messages=messages)
-        self.write('feed')
+        user = self.get_user_by_id(user_id)
+        msgs = self.db.query('select * from msgs order by created desc limit 20')
+        self.render('feed.html', msgs=msgs, user=user)
 
 class HomeHandler(BaseHandler):
     def get(self):
@@ -85,18 +94,12 @@ class Unfollow(BaseHandler):
 
 class PostMessage(BaseHandler):
     def post(self):
-        msg = self.get_argument('msg')
-        user = self.get_argument('user')
-        id = self.get_username_id(user)
-        message = {
-            'id': id,
-            'from': user,
-            'msg': msg,
-        }
-        # store msg
-        msg = escape.to_basestring(
-            self.render_string('message.html', message=message))
-        self.write(msg)
+        text = self.get_argument('text')
+        user_id = self.get_argument('user_id')
+        user = self.get_user_by_id(user_id)
+        self.db.execute('insert into msgs (user_id,username,text) values (%s,%s,%s)', 
+            user.id, user.username, text)
+        self.redirect('/')
 
 def main():
     parse_command_line()

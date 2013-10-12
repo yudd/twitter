@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block body %}
+  <h3>Recent Users</h3>
+  <ul class="">
+  {% for user in users %}
+    <li class="">{{user.created}} -
+      <a href="/feed/{{user.id}}" title="Feed for this user">{{user.username}}</a> -
+      [<a href="/post/{{user.id}}" title="Twit as this user">Twit</a>]
+    </li>
+  {% end %}
+  </ul>
+{% end %}
