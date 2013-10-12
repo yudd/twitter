@@ -13,9 +13,9 @@ drop table if exists users;
 create table users (
     id int not null auto_increment primary key,
     username varchar(64) not null unique,
-    password varchar(64) not null,
-    email varchar(64) not null unique,
-    fullname varchar(64) not null,
+    #password varchar(64) not null default '',
+    #email varchar(64) not null default '',
+    #fullname varchar(64) not null default '',
     created timestamp not null,
     key (created)
 );

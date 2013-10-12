@@ -8,3 +8,11 @@ GRANT ALL PRIVILEGES ON twit.* TO 'twit'@'localhost';
 " | mysql -u root -p
 
 mysql -u twit twit < schema.sql
+
+exit
+apt-get install python-pip
+apt-get install libmysqlclient-dev
+apt-get install mysql-python
+apt-get install python-MySQLdb
+pip install tornado
+pip install torndb
