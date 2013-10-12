@@ -71,7 +71,8 @@ class PostForm(BaseHandler):
 class GetFeed(BaseHandler):
     def get(self, user_id):
         user = self.get_user_by_id(user_id)
-        msgs = self.db.query('select * from msgs order by created desc limit 20')
+        msgs = self.db.query('select * from msgs where user_id=%s order by created desc limit 20',
+            user.id)
         self.render('feed.html', msgs=msgs, user=user)
 
 class HomeHandler(BaseHandler):
