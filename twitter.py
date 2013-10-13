@@ -19,8 +19,8 @@ class Application(web.Application):
         handlers = [
             (r'/', HomeHandler),
             (r'/post', PostMessage),
-            (r'/follow', Follow),
-            (r'/unfollow', Unfollow),
+            (r'/follow/(\w+)', Follow),
+            (r'/unfollow/(\w+)', Unfollow),
             (r'/feed/(\w+)', GetFeed),
             (r'/globalfeed', GetGlobalFeed),
             (r'/create', CreateUser),
@@ -84,12 +84,29 @@ class GetGlobalFeed(BaseHandler):
         self.render('globalfeed.html', msgs=msgs)
 
 class Follow(BaseHandler):
-    def get(self, user):
-        pass
+    def get(self, id_to_follow):
+        res = self.db.get('select count(*) cnt from follows where user_id=%s and followed_id=%s',
+            id_to_follow, self.current_user.id)
+        if res.cnt:
+            action = 'Already following'
+        else:
+            self.db.execute('insert into follows (user_id,followed_id,followed_username) values (%s,%s,%s)', 
+                id_to_follow, self.current_user.id, self.current_user.username)
+            action = 'Now following'
+        to_follow = self.get_user_by_id(id_to_follow)
+        self.render('follow.html', username=to_follow.username, action=action)
 
 class Unfollow(BaseHandler):
-    def get(self, user):
-        pass
+    def get(self, id_to_follow):
+        res = self.db.get('select id from follows where user_id=%s and followed_id=%s',
+            id_to_follow, self.current_user.id)
+        if res:
+            self.db.execute('delete from follows where id=%s', res.id)
+            action = 'No longer following'
+        else:
+            action = 'Have not been following'
+        to_follow = self.get_user_by_id(id_to_follow)
+        self.render('follow.html', username=to_follow.username, action=action)
 
 class PostMessage(BaseHandler):
     def get(self):
