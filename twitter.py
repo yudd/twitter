@@ -53,6 +53,7 @@ class BaseHandler(web.RequestHandler):
 class CreateUser(BaseHandler):
     def post(self):
         username = self.get_argument('username')
+        # TODO: check for invalid chars in username
         user_id = self.db.execute('insert into users (username) values (%s)', username)
         self.set_cookie('user_id', str(user_id))
         self.set_cookie('username', username)
@@ -77,10 +78,15 @@ class GetFeed(BaseHandler):
 class HomeHandler(BaseHandler):
     def get(self):
         users = self.db.query('select * from users order by id desc limit 20')
-        res = self.db.query('select followed_id,followed_username from follows where user_id=%r',
-            int(self.current_user.id))
-        follows = ['<span>%s</span>'%r.followed_username for r in res]
-        follows = ','.join(follows)
+        follows = []
+        if users:
+            if self.current_user:
+                res = self.db.query('select followed_id,followed_username from follows where user_id=%r',
+                    int(self.current_user.id))
+                follows = ['<span>%s</span>'%r.followed_username for r in res]
+                follows = ','.join(follows)
+        else:
+            users = []
         self.render('home.html', users=users, follows=follows)
 
 class GetGlobalFeed(BaseHandler):
