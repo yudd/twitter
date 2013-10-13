@@ -69,14 +69,19 @@ class Login(BaseHandler):
 class GetFeed(BaseHandler):
     def get(self, user_id):
         user = self.get_user_by_id(user_id)
-        msgs = self.db.query('select * from msgs where user_id=%s order by created desc limit 20',
-            user.id)
+        msgs = self.db.query('select username, text, msgs.created created from msgs, follows'
+            ' where follows.user_id=%s and follows.followed_id=msgs.user_id'
+            ' order by created desc limit 50', user.id)
         self.render('feed.html', msgs=msgs, user=user)
 
 class HomeHandler(BaseHandler):
     def get(self):
         users = self.db.query('select * from users order by id desc limit 20')
-        self.render('home.html', users=users)
+        res = self.db.query('select followed_id,followed_username from follows where user_id=%r',
+            int(self.current_user.id))
+        follows = ['<span>%s</span>'%r.followed_username for r in res]
+        follows = ','.join(follows)
+        self.render('home.html', users=users, follows=follows)
 
 class GetGlobalFeed(BaseHandler):
     def get(self):
@@ -86,20 +91,21 @@ class GetGlobalFeed(BaseHandler):
 class Follow(BaseHandler):
     def get(self, id_to_follow):
         res = self.db.get('select count(*) cnt from follows where user_id=%s and followed_id=%s',
-            id_to_follow, self.current_user.id)
+            self.current_user.id, id_to_follow)
+        to_follow = self.get_user_by_id(id_to_follow)
         if res.cnt:
             action = 'Already following'
         else:
+            # TODO: notify when trying to follow myself
             self.db.execute('insert into follows (user_id,followed_id,followed_username) values (%s,%s,%s)', 
-                id_to_follow, self.current_user.id, self.current_user.username)
+                self.current_user.id, id_to_follow, to_follow.username)
             action = 'Now following'
-        to_follow = self.get_user_by_id(id_to_follow)
         self.render('follow.html', username=to_follow.username, action=action)
 
 class Unfollow(BaseHandler):
     def get(self, id_to_follow):
         res = self.db.get('select id from follows where user_id=%s and followed_id=%s',
-            id_to_follow, self.current_user.id)
+            self.current_user.id, id_to_follow)
         if res:
             self.db.execute('delete from follows where id=%s', res.id)
             action = 'No longer following'

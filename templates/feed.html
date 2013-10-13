@@ -3,7 +3,7 @@
   <h3>Feed for {{user.username}}</h3>
   <ul class="">
   {% for msg in msgs %}
-    <li class="">{{msg.created}} -
+    <li class="">{{msg.created}} - {{msg.username}} - 
       <span>{{msg.text}}</span>
     </li>
   {% end %}
