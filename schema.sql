@@ -38,6 +38,7 @@ create table follows (
     followed_id int not null references users(id),
     followed_username varchar(64) not null,
     created timestamp not null,
-    key (user_id)
+    key (user_id),
+    key (followed_id)
 );
 
