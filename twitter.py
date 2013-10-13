@@ -18,22 +18,17 @@ class Application(web.Application):
     def __init__(self):
         handlers = [
             (r'/', HomeHandler),
-            (r'/post/(\w+)', PostForm),
             (r'/post', PostMessage),
             (r'/follow', Follow),
             (r'/unfollow', Unfollow),
             (r'/feed/(\w+)', GetFeed),
             (r'/globalfeed', GetGlobalFeed),
             (r'/create', CreateUser),
-            #(r'/auth/login', AuthLoginHandler),
-            #(r'/auth/logout', AuthLogoutHandler),
+            (r'/login/(\w+)', Login),
         ]
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), 'templates'),
             static_path=os.path.join(os.path.dirname(__file__), 'static'),
-            #xsrf_cookies=True,
-            #cookie_secret='__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__',
-            #login_url='/auth/login',
             debug=True,
         )
         web.Application.__init__(self, handlers, **settings)
@@ -56,17 +51,20 @@ class BaseHandler(web.RequestHandler):
         return self.get_user_by_id(user_id)
 
 class CreateUser(BaseHandler):
-    def get(self):
+    def post(self):
         username = self.get_argument('username')
         user_id = self.db.execute('insert into users (username) values (%s)', username)
         self.set_cookie('user_id', str(user_id))
         self.set_cookie('username', username)
         self.redirect('/')
 
-class PostForm(BaseHandler):
+class Login(BaseHandler):
     def get(self, user_id):
         user = self.get_user_by_id(user_id)
-        self.render('post.html', user=user)
+        if user:
+            self.set_cookie('user_id', user_id)
+            self.set_cookie('username', user.username)
+        self.redirect('/')
 
 class GetFeed(BaseHandler):
     def get(self, user_id):
@@ -94,12 +92,16 @@ class Unfollow(BaseHandler):
         pass
 
 class PostMessage(BaseHandler):
+    def get(self):
+        user = self.current_user
+        self.render('post.html', user=user)
+
     def post(self):
-        text = self.get_argument('text')
-        user_id = self.get_argument('user_id')
-        user = self.get_user_by_id(user_id)
-        self.db.execute('insert into msgs (user_id,username,text) values (%s,%s,%s)', 
-            user.id, user.username, text)
+        user = self.current_user
+        if user:
+            text = self.get_argument('text')
+            self.db.execute('insert into msgs (user_id,username,text) values (%s,%s,%s)', 
+                user.id, user.username, text)
         self.redirect('/')
 
 def main():
